@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"> <!-- Corrected from UTF-R-8 -->
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text to Speech Reader</title>
-    <!-- 1. We're using Tailwind CSS for styling to make it look clean and modern. -->
+    <!-- 1. We're using Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Simple style for the <html> and <body> to take full height */
@@ -12,34 +12,75 @@
             height: 100%;
             font-family: 'Inter', sans-serif;
         }
+        
+        /* This is where the magic for the background image happens!
+         We're telling the <body> to use a background image.
+        */
+        body {
+            /* VVV --- THIS IS THE LINE YOU WILL CHANGE --- VVV
+             I've put a placeholder here. You will replace this URL.
+            */
+            background-image: url('https://placehold.co/1920x1080/1a202c/2d3748?text=Your+Novel+Image+Here');
+            
+            background-size: cover; /* Make the image cover the whole screen */
+            background-attachment: fixed; /* Keep it in place when you scroll */
+            background-position: center center; /* Center the image */
+            position: relative;
+        }
+
+        /* This creates a dark overlay on top of the image, 
+           so the text on the card is easier to read. */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6); /* 60% black overlay */
+            z-index: 1; /* Make sure it's above the image */
+        }
+        
+        /* We need this to make sure our content card 
+           sits on top of the dark overlay */
+        .content-card {
+            position: relative;
+            z-index: 2;
+        }
+
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-full p-4">
+<body class="flex items-center justify-center min-h-full p-4">
 
-    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-11/12 max-w-2xl">
-        <h1 class="text-2xl sm:text-3xl font-bold text-center text-blue-600 mb-6">Text-to-Speech Reader</h1>
+    <!-- 
+      This is the main card.
+      I've changed its styles to be semi-transparent and blurred (backdrop-blur-sm)
+      to get that cool "glass" effect, just like your example site.
+    -->
+    <div class="content-card bg-gray-900 bg-opacity-80 backdrop-blur-sm border border-gray-700 p-6 sm:p-8 rounded-xl shadow-lg w-11/12 max-w-2xl text-gray-200">
+        
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-indigo-400 mb-6">Novel Reader</h1>
 
         <!-- Text area to paste text -->
         <div class="mb-4">
-            <label for="text-to-read" class="block text-sm font-medium text-gray-700 mb-2">Paste your text here:</label>
-            <textarea id="text-to-read" rows="10" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Type or paste your text..."></textarea>
+            <label for="text-to-read" class="block text-sm font-medium text-gray-300 mb-2">Paste your text here:</label>
+            <textarea id="text-to-read" rows="10" class="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-100 placeholder-gray-400" placeholder="Type or paste your text..."></textarea>
         </div>
 
         <!-- Voice selection dropdown -->
         <div class="mb-4">
-            <label for="voice-select" class="block text-sm font-medium text-gray-700 mb-2">Choose a voice:</label>
-            <select id="voice-select" class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"></select>
+            <label for="voice-select" class="block text-sm font-medium text-gray-300 mb-2">Choose a voice:</label>
+            <select id="voice-select" class="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-100 focus:ring-2 focus:ring-indigo-500"></select>
         </div>
 
-        <!-- NEW: Playback speed slider -->
+        <!-- Playback speed slider -->
         <div class="mb-6">
-            <label for="rate-select" class="block text-sm font-medium text-gray-700 mb-2">Playback Speed: <span id="rate-value" class="font-bold text-blue-600">1.0x</span></label>
-            <input type="range" id="rate-select" min="0.5" max="2" step="0.1" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+            <label for="rate-select" class="block text-sm font-medium text-gray-300 mb-2">Playback Speed: <span id="rate-value" class="font-bold text-indigo-400">1.0x</span></label>
+            <!-- Styled the slider to match the dark theme -->
+            <input type="range" id="rate-select" min="0.5" max="2" step="0.1" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-600">
         </div>
 
         <!-- Control buttons -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <button id="play-btn" class="bg-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-blue-700 transition duration-200">
+            <!-- Changed the Play button to match the theme accent color -->
+            <button id="play-btn" class="bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-indigo-700 transition duration-200">
                 Play
             </button>
             <button id="pause-btn" class="bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-yellow-600 transition duration-200">
@@ -56,6 +97,7 @@
 
     <script>
         // --- This is the JavaScript "brain" ---
+        // (No changes were needed to the JavaScript!)
 
         // 1. Get references to all the HTML elements we need
         const playButton = document.getElementById('play-btn');
@@ -65,7 +107,6 @@
         const textInput = document.getElementById('text-to-read');
         const voiceSelect = document.getElementById('voice-select');
         
-        // NEW: Get references for the speed controls
         const rateSelect = document.getElementById('rate-select');
         const rateValue = document.getElementById('rate-value');
 
@@ -80,70 +121,48 @@
             voices = synth.getVoices();
             voiceSelect.innerHTML = ''; // Clear the dropdown
             
-            // Go through each available voice and add it as an option
             voices.forEach((voice, i) => {
                 const option = document.createElement('option');
-                option.textContent = `${voice.name} (${voice.lang})`; // Show "Voice Name (language)"
+                option.textContent = `${voice.name} (${voice.lang})`;
                 option.setAttribute('data-name', voice.name);
                 voiceSelect.appendChild(option);
             });
         }
 
-        // Voices load a bit weirdly. This event "onvoiceschanged"
-        // fires when the browser is ready to tell us what voices it has.
         synth.onvoiceschanged = loadVoices;
-        // We also call it once just in case the voices are already loaded
         loadVoices();
         
-        // NEW: Event listener to update the speed value display
         rateSelect.addEventListener('input', () => {
-            // Format the value to one decimal place (e.g., "1.0x")
             rateValue.textContent = `${parseFloat(rateSelect.value).toFixed(1)}x`;
         });
 
 
         // --- 4. Connect functions to our buttons ---
 
-        // When you click "Play"
         playButton.addEventListener('click', () => {
-            // Stop any speaking that is already happening
             synth.cancel();
-
             const text = textInput.value;
             if (text !== '') {
-                // This is the object that holds the text and voice info
                 const utterance = new SpeechSynthesisUtterance(text);
-                
-                // Find the selected voice and assign it
-                const selectedVoiceName = voiceSelect.selectedOptions[0]?.getAttribute('data-name'); // Added safety check
+                const selectedVoiceName = voiceSelect.selectedOptions[0]?.getAttribute('data-name');
                 const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
                 if (selectedVoice) {
                     utterance.voice = selectedVoice;
                 }
-                
-                // NEW: Get the playback rate from the slider
                 utterance.rate = parseFloat(rateSelect.value);
-
-                // Tell the browser to speak!
                 synth.speak(utterance);
             }
         });
 
-        // When you click "Pause"
         pauseButton.addEventListener('click', () => {
-            // This is a built-in function to pause
             synth.pause();
         });
 
-        // When you click "Resume"
         resumeButton.addEventListener('click', () => {
-            // This is a built-in function to resume
             synth.resume();
         });
 
-        // When you click "Stop"
         stopButton.addEventListener('click', () => {
-            // This is a built-in function to stop (and forget)
             synth.cancel();
         });
 
