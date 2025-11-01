@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> <!-- Corrected from UTF-R-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech Reader</title>
+    <!-- 1. We're using Tailwind CSS for styling to make it look clean and modern. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Simple style for the <html> and <body> to take full height */
+        html, body {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-full p-4">
+
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-11/12 max-w-2xl">
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-blue-600 mb-6">Text-to-Speech Reader</h1>
+
+        <!-- Text area to paste text -->
+        <div class="mb-4">
+            <label for="text-to-read" class="block text-sm font-medium text-gray-700 mb-2">Paste your text here:</label>
+            <textarea id="text-to-read" rows="10" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Type or paste your text..."></textarea>
+        </div>
+
+        <!-- Voice selection dropdown -->
+        <div class="mb-4">
+            <label for="voice-select" class="block text-sm font-medium text-gray-700 mb-2">Choose a voice:</label>
+            <select id="voice-select" class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"></select>
+        </div>
+
+        <!-- NEW: Playback speed slider -->
+        <div class="mb-6">
+            <label for="rate-select" class="block text-sm font-medium text-gray-700 mb-2">Playback Speed: <span id="rate-value" class="font-bold text-blue-600">1.0x</span></label>
+            <input type="range" id="rate-select" min="0.5" max="2" step="0.1" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+        </div>
+
+        <!-- Control buttons -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button id="play-btn" class="bg-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-blue-700 transition duration-200">
+                Play
+            </button>
+            <button id="pause-btn" class="bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-yellow-600 transition duration-200">
+                Pause
+            </button>
+            <button id="resume-btn" class="bg-green-500 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-green-600 transition duration-200">
+                Resume
+            </button>
+            <button id="stop-btn" class="bg-red-600 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-red-700 transition duration-200">
+                Stop
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- This is the JavaScript "brain" ---
+
+        // 1. Get references to all the HTML elements we need
+        const playButton = document.getElementById('play-btn');
+        const pauseButton = document.getElementById('pause-btn');
+        const resumeButton = document.getElementById('resume-btn');
+        const stopButton = document.getElementById('stop-btn');
+        const textInput = document.getElementById('text-to-read');
+        const voiceSelect = document.getElementById('voice-select');
+        
+        // NEW: Get references for the speed controls
+        const rateSelect = document.getElementById('rate-select');
+        const rateValue = document.getElementById('rate-value');
+
+        // 2. This is the main browser tool for speaking
+        const synth = window.speechSynthesis;
+
+        // 3. We'll store the voices here
+        let voices = [];
+
+        // This function loads the available voices into the dropdown
+        function loadVoices() {
+            voices = synth.getVoices();
+            voiceSelect.innerHTML = ''; // Clear the dropdown
+            
+            // Go through each available voice and add it as an option
+            voices.forEach((voice, i) => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`; // Show "Voice Name (language)"
+                option.setAttribute('data-name', voice.name);
+                voiceSelect.appendChild(option);
+            });
+        }
+
+        // Voices load a bit weirdly. This event "onvoiceschanged"
+        // fires when the browser is ready to tell us what voices it has.
+        synth.onvoiceschanged = loadVoices;
+        // We also call it once just in case the voices are already loaded
+        loadVoices();
+        
+        // NEW: Event listener to update the speed value display
+        rateSelect.addEventListener('input', () => {
+            // Format the value to one decimal place (e.g., "1.0x")
+            rateValue.textContent = `${parseFloat(rateSelect.value).toFixed(1)}x`;
+        });
+
+
+        // --- 4. Connect functions to our buttons ---
+
+        // When you click "Play"
+        playButton.addEventListener('click', () => {
+            // Stop any speaking that is already happening
+            synth.cancel();
+
+            const text = textInput.value;
+            if (text !== '') {
+                // This is the object that holds the text and voice info
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Find the selected voice and assign it
+                const selectedVoiceName = voiceSelect.selectedOptions[0]?.getAttribute('data-name'); // Added safety check
+                const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+                
+                // NEW: Get the playback rate from the slider
+                utterance.rate = parseFloat(rateSelect.value);
+
+                // Tell the browser to speak!
+                synth.speak(utterance);
+            }
+        });
+
+        // When you click "Pause"
+        pauseButton.addEventListener('click', () => {
+            // This is a built-in function to pause
+            synth.pause();
+        });
+
+        // When you click "Resume"
+        resumeButton.addEventListener('click', () => {
+            // This is a built-in function to resume
+            synth.resume();
+        });
+
+        // When you click "Stop"
+        stopButton.addEventListener('click', () => {
+            // This is a built-in function to stop (and forget)
+            synth.cancel();
+        });
+
+    </script>
+</body>
+</html>
+
